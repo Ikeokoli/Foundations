@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import App from "./App";
@@ -15,7 +15,9 @@ describe("Foundation Playbook Finder", () => {
     render(<App />);
     await user.type(screen.getByRole("textbox", { name: "Search playbooks" }), "database");
     expect(await screen.findByRole("button", { name: /Database failover/i })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Queue saturation/i })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.queryByRole("button", { name: /Queue saturation/i })).not.toBeInTheDocument();
+    });
   });
   it("opens a playbook detail panel", async () => {
     const user = userEvent.setup();
