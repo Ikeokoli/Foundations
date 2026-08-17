@@ -7,13 +7,21 @@ export function usePlaybookSearch(query: string) {
   const [status, setStatus] = useState<SearchStatus>("idle");
 
   useEffect(() => {
+    let active = true;
     setStatus("loading");
     searchPlaybooks(query)
       .then((nextResults) => {
+        if (!active) return;
         setResults(nextResults);
         setStatus(nextResults.length > 0 ? "success" : "empty");
       })
-      .catch(() => setStatus("error"));
+      .catch(() => {
+        if (active) setStatus("error");
+      });
+
+    return () => {
+      active = false;
+    };
   }, [query]);
 
   return { results, status };
