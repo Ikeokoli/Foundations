@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import App from "./App";
@@ -26,5 +26,15 @@ describe("Foundation Playbook Finder", () => {
     const panel = screen.getByRole("complementary");
     expect(within(panel).getByRole("heading", { name: "Rollback a release" })).toBeInTheDocument();
     expect(within(panel).getByText("Release Engineering")).toBeInTheDocument();
+  });
+  it("keeps newer search results when an earlier request finishes last", async () => {
+    render(<App />);
+    const search = screen.getByRole("textbox", { name: "Search playbooks" });
+    fireEvent.change(search, { target: { value: "api" } });
+    fireEvent.change(search, { target: { value: "database" } });
+    expect(await screen.findByRole("button", { name: /Database failover/i })).toBeInTheDocument();
+    await new Promise((resolve) => window.setTimeout(resolve, 140));
+    expect(screen.getByRole("button", { name: /Database failover/i })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /API latency incident/i })).not.toBeInTheDocument();
   });
 });
